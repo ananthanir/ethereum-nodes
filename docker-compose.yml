@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  execution:
+    image: ethereum/client-go:stable
+    container_name: geth
+    volumes:
+      - ./geth:/geth
+    command:
+      [
+        "--syncmode=snap",
+        "--datadir=/geth/data",
+        "--http",
+        "--http.addr=0.0.0.0",
+        "--http.port=8545",
+        "--http.api=eth,net,web3",
+        "--http.corsdomain=*",
+        "--ws",
+        "--ws.api=eth,net,web3",
+        "--port=30303",
+        "--authrpc.port=8551",
+        "--authrpc.addr=0.0.0.0",
+        "--authrpc.vhosts=*",
+        "--authrpc.jwtsecret=/geth/jwt.hex"
+      ]
+    ports:
+      - "8545:8545"
+      - "30303:30303"
+      - "8551:8551"
+
+  consensus:
+    image: sigp/lighthouse:latest
+    container_name: lighthouse
+    depends_on:
+      - execution
+    volumes:
+      - ./lighthouse:/lighthouse
+      - ./geth/jwt.hex:/lighthouse/jwt.hex
+    command:
+      [
+        "lighthouse",
+        "bn",
+        "--network=mainnet",
+        "--checkpoint-sync-url=https://mainnet.checkpoint.sigp.io",
+        "--datadir=/lighthouse/data",
+        "--execution-endpoint=http://geth:8551",
+        "--jwt-secrets=/lighthouse/jwt.hex"
+      ]
