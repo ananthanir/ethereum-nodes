@@ -1,0 +1,3 @@
+**/data/
+**/jwt.hex
+.env

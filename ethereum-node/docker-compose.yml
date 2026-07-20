@@ -2,19 +2,23 @@ services:
   execution:
     image: ethereum/client-go:stable
     container_name: geth
+    restart: unless-stopped
     volumes:
       - ./geth:/geth
     command:
       [
+        # For a testnet, add e.g. "--sepolia" or "--holesky" here and update
+        # the lighthouse "--network" flag below to match.
         "--syncmode=snap",
         "--datadir=/geth/data",
         "--http",
         "--http.addr=0.0.0.0",
         "--http.port=8545",
-        "--http.api=eth,net,web3",
+        "--http.api=eth,net,web3,txpool",
         "--http.corsdomain=*",
         "--ws",
-        "--ws.api=eth,net,web3",
+        "--ws.addr=0.0.0.0",
+        "--ws.api=eth,net,web3,txpool",
         "--port=30303",
         "--authrpc.port=8551",
         "--authrpc.addr=0.0.0.0",
@@ -23,6 +27,7 @@ services:
       ]
     ports:
       - "8545:8545"
+      - "8546:8546"
       - "30303:30303/tcp"
       - "30303:30303/udp"
       - "8551:8551"
@@ -30,18 +35,25 @@ services:
   consensus:
     image: sigp/lighthouse:latest
     container_name: lighthouse
+    restart: unless-stopped
     depends_on:
       - execution
     volumes:
       - ./lighthouse:/lighthouse
-      - ./geth/jwt.hex:/lighthouse/jwt.hex
+      - ./geth/jwt.hex:/lighthouse/jwt.hex:ro
     command:
       [
         "lighthouse",
         "bn",
-        "--network=mainnet",
-        "--checkpoint-sync-url=https://mainnet.checkpoint.sigp.io",
+        "--network=${NETWORK:-mainnet}",
+        "--checkpoint-sync-url=${CHECKPOINT_SYNC_URL:-https://mainnet.checkpoint.sigp.io}",
         "--datadir=/lighthouse/data",
         "--execution-endpoint=http://geth:8551",
-        "--jwt-secrets=/lighthouse/jwt.hex"
+        "--jwt-secrets=/lighthouse/jwt.hex",
+        "--http",
+        "--http-address=0.0.0.0"
       ]
+    ports:
+      - "5052:5052"
+      - "9000:9000/tcp"
+      - "9000:9000/udp"

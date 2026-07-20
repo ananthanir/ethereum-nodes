@@ -1,0 +1,4 @@
+Node-*/data/caches/
+Node-*/data/database/
+**/VERSION_METADATA.json
+**/DATABASE_METADATA.json
