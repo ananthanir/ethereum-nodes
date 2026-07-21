@@ -4,7 +4,7 @@ A local 4-node private Ethereum network running [Hyperledger Besu](https://besu.
 
 ## Requirements
 
-- Docker and Docker Compose v2
+- Docker and Docker Compose
 
 ## Layout
 
@@ -17,6 +17,22 @@ network/cmd.txt            # equivalent bare `besu` commands, if you'd rather ru
 ```
 
 `node1` (`192.168.1.100:30303`) acts as the bootnode; nodes 2–4 connect to it and discover each other via QBFT/devp2p from there.
+
+## Generating the network config
+
+The genesis file, validator keys, and per-node data folders in this repo were produced by the Besu [QBFT config generator](https://besu.hyperledger.org/private-networks/tutorials/qbft) from `network/networkFiles/qbftConfigFile.json`. This is already done for this repo — you only need to re-run it if you want a fresh validator set (see [Regenerating the network from scratch](#regenerating-the-network-from-scratch)). To run it via Docker instead of a local `besu` install:
+
+First, `cd` into `network/networkFiles` (where `qbftConfigFile.json` lives), then get a shell inside a Besu container with the current directory mounted as its working directory:
+
+```bash
+docker run --rm -it -v "$(pwd):/networkFiles" -w /networkFiles --entrypoint=/bin/sh hyperledger/besu:26.1.0
+```
+
+Then, inside that container, run:
+
+```bash
+besu operator generate-blockchain-config --config-file=qbftConfigFile.json --to=networkFiles --private-key-file-name=key
+```
 
 ## Running
 
