@@ -8,7 +8,7 @@ services:
     command:
       [
         # For a testnet, add e.g. "--sepolia" or "--holesky" here and update
-        # the lighthouse "--network" flag below to match.
+      # the lighthouse "--network" flag below to match.
         "--syncmode=snap",
         "--datadir=/geth/data",
         "--http",
@@ -41,18 +41,7 @@ services:
     volumes:
       - ./lighthouse:/lighthouse
       - ./geth/jwt.hex:/lighthouse/jwt.hex:ro
-    command:
-      [
-        "lighthouse",
-        "bn",
-        "--network=${NETWORK:-mainnet}",
-        "--checkpoint-sync-url=${CHECKPOINT_SYNC_URL:-https://mainnet.checkpoint.sigp.io}",
-        "--datadir=/lighthouse/data",
-        "--execution-endpoint=http://geth:8551",
-        "--jwt-secrets=/lighthouse/jwt.hex",
-        "--http",
-        "--http-address=0.0.0.0"
-      ]
+    command: [ "lighthouse", "bn", "--network=${NETWORK:-mainnet}", "--checkpoint-sync-url=${CHECKPOINT_SYNC_URL:-https://mainnet.checkpoint.sigp.io}", "--datadir=/lighthouse/data", "--execution-endpoint=http://geth:8551", "--jwt-secrets=/lighthouse/jwt.hex", "--http", "--http-address=0.0.0.0" ]
     ports:
       - "5052:5052"
       - "9000:9000/tcp"
